@@ -7,35 +7,53 @@ const mu = new discord.Client()
 mu.login(process.env.muto)
 const ytToken = process.env.muyt
 
-mu.on('message', (msgP0) => {
-  let msgP1 = msgP0.content.split(' ')
-  let msgP2 = msgP1[0].slice(process.env.mupf.length)
-  let msgP3 = msgP1.slice(1)
-  let msgP4 = msgP3.join(' ')
-  if (msgP2 === '불러줘') {
-    if (msgP0.member.voiceChannel) {
-      if (!msgP0.guild.voiceConnection) {
-        msgP0.member.voiceChannel.join().then((connection) => {
-          ytch(msgP4, {
-            maxResults: 1,
-            key: ytToken
-          }, (err, results) => {
-            if (err) {
-              console.log(err)
-            } else {
-              let song = connection.playStream(ytdl(results[0].link, { audioonly: true }), { volume: 0.5 })
-                .on('start', () => {
-                  msgP0.channel.send(new discord.RichEmbed().setAuthor(msgP0.author.username + '에 의해 뮤봇이 부릅니다,', msgP0.author.displayAvatarURL).setColor(randomHexColor).setTitle(results[0].title).setDescription(results[0].description).setThumbnail(results[0].thumbnails)).then((th) => {
-                    song.on('end', () => {
-                      th.edit('다불렀다뮤~')
-                      connection.channel.leave()
-                    })
-                  })
-                })
-            }
-          })
-        })
+let song = null
+
+mu.on('message', (msg) => {
+  let search = msg.content.slice(process.env.mupf.length)
+  if ((search === '그만불러' || search === '닥쳐') && msg.content.startsWith(process.env.mupf) && song) {
+    song.end()
+    msg.channel.send('노래가 취소되었습니다')
+  } else if (search && msg.content.startsWith(process.env.mupf) && !song) {
+    if (msg.member.voiceChannel) {
+      if (!msg.guild.voiceConnection) {
+        msg.member.voiceChannel.join()
       }
+      msg.channel.send('검색중... ' + search).then((th) => {
+        ytch(search, {
+          maxResults: 1,
+          key: ytToken
+        }, (err, results) => {
+          if (err) {
+            th.edit('에러발생!\n' + err)
+          } else {
+            let songEmb = new discord.RichEmbed()
+              .setAuthor(msg.author.username + '님이 뮤봇의 노래를 듣고있습니다', msg.author.displayAvatarURL)
+              .setTitle(results[0].title)
+              .setDescription(results[0].description)
+              .setThumbnail(results[0].thumbnails.default.url)
+              .setColor(randomHexColor())
+              .setFooter('유튜브 서비스 상태의 따라 재생속도가 느리거나 음질이 좋지 않을 수 있습니다')
+            th.edit(songEmb)
+            song = msg.guild.voiceConnection.playStream(ytdl(results[0].link, { audioonly: true }))
+
+            song.on('end', () => {
+              let songEndEmb = new discord.RichEmbed()
+                .setAuthor(msg.author.username + '님이 뮤봇의 노래를 듣고있었습니다', msg.author.displayAvatarURL)
+                .setTitle(results[0].title)
+                .setDescription(results[0].description)
+                .setThumbnail(results[0].thumbnails.default.url)
+                .setColor('#ff0000')
+                .setFooter('유튜브 서비스 상태의 따라 재생속도가 느리거나 음질이 좋지 않을 수 있습니다')
+              song = null
+              msg.member.voiceChannel.leave()
+              th.edit(songEndEmb)
+            })
+          }
+        })
+      })
     }
+  } else if (msg.content.startsWith(process.env.mupf) && song) {
+    msg.channel.send('이미 재생중인 노래가 있다뮤! `mz!그만불러`를 사용하라뮤!')
   }
 })
