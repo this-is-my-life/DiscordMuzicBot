@@ -23,14 +23,14 @@ mu.on('message', (msgP0) => {
             if (err) {
               console.log(err)
             } else {
-              let sended
-              connection.playStream(ytdl(results[0].link, { audioonly: true }), { volume: 0.5 })
+              let song = connection.playStream(ytdl(results[0].link, { audioonly: true }), { volume: 0.5 })
                 .on('start', () => {
-                  sended = msgP0.channel.send(new discord.RichEmbed().setAuthor(msgP0.author.username + '에 의해 뮤봇이 부릅니다,', msgP0.author.displayAvatarURL).setColor(randomHexColor).setTitle(results[0].title).setDescription(results[0].description).setThumbnail(results[0].thumbnails))
-                })
-                .on('end', () => {
-                  sended.edit('다불렀다뮤~')
-                  connection.channel.leave()
+                  msgP0.channel.send(new discord.RichEmbed().setAuthor(msgP0.author.username + '에 의해 뮤봇이 부릅니다,', msgP0.author.displayAvatarURL).setColor(randomHexColor).setTitle(results[0].title).setDescription(results[0].description).setThumbnail(results[0].thumbnails)).then((th) => {
+                    song.on('end', () => {
+                      th.edit('다불렀다뮤~')
+                      connection.channel.leave()
+                    })
+                  })
                 })
             }
           })
