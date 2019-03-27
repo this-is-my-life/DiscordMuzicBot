@@ -37,20 +37,22 @@ mu.on('message', (msg) => {
               .setFooter('유튜브 서비스 상태의 따라 재생속도가 느리거나 음질이 좋지 않을 수 있습니다')
             th.edit(songEmb)
 
-            song[msg.channel.id] = msg.guild.voiceConnection.playStream(ytdl(results[0].link, { audioonly: true }), { volume: 0.5 })
+            setTimeout(() => {
+              song[msg.channel.id] = msg.guild.voiceConnection.playStream(ytdl(results[0].link, { audioonly: true }), { volume: 0.5 })
 
-            song[msg.channel.id].on('end', () => {
-              let songEndEmb = new discord.RichEmbed()
-                .setAuthor(msg.author.username + '님이 뮤봇의 노래를 듣고있*었*습니다', msg.author.displayAvatarURL)
-                .setTitle(results[0].title)
-                .setDescription(results[0].description)
-                .setThumbnail(results[0].thumbnails.default.url)
-                .setColor('#ff0000')
-                .setFooter('유튜브 서비스 상태의 따라 재생속도가 느리거나 음질이 좋지 않을 수 있*었*습니다')
-              song[msg.channel.id] = null
-              msg.member.voiceChannel.leave()
-              th.edit(songEndEmb)
-            })
+              song[msg.channel.id].on('end', () => {
+                let songEndEmb = new discord.RichEmbed()
+                  .setAuthor(msg.author.username + '님이 뮤봇의 노래를 듣고있*었*습니다', msg.author.displayAvatarURL)
+                  .setTitle(results[0].title)
+                  .setDescription(results[0].description)
+                  .setThumbnail(results[0].thumbnails.default.url)
+                  .setColor('#ff0000')
+                  .setFooter('유튜브 서비스 상태의 따라 재생속도가 느리거나 음질이 좋지 않을 수 있*었*습니다')
+                song[msg.channel.id] = null
+                msg.member.voiceChannel.leave()
+                th.edit(songEndEmb)
+              })
+            }, 1000)
           }
         })
       })
