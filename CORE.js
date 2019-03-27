@@ -12,7 +12,7 @@ let song = {}
 mu.on('message', (msg) => {
   let search = msg.content.slice(process.env.mupf.length)
   if ((search === '그만불러' || search === '닥쳐') && msg.content.startsWith(process.env.mupf) && song[msg.channel.id]) {
-    song.end()
+    song[msg.channel.id].end()
     msg.channel.send('쳇... ')
   } else if (search && msg.content.startsWith(process.env.mupf) && !song[msg.channel.id]) {
     if (msg.member.voiceChannel) {
